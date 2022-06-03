@@ -49,8 +49,6 @@ const App = () => {
     }
     if (images !== imagesNew && imagesNew !== null && page >= 1) {
       setPages(Math.ceil(imagesNew.data.totalHits / 12));
-      console.log('imagesNew', imagesNew);
-      console.log('images', images);
       setImages([...images, ...imagesNew.data.hits]);
       setStatus(Status.RESOLVED);
     }
