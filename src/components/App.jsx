@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import s from './finder.module.css';
 import ImageGallery from './ImageGallery';
 import Searchbar from './Searchbar';
@@ -14,43 +14,28 @@ const Status = {
   RESOLVED: 'resolved',
   REJECTED: 'rejected',
 };
-export class App extends Component {
-  state = {
-    imageName: '',
-    page: 1,
-    images: [],
-    imagesNew: null,
-    error: null,
-    status: Status.IDLE,
-    pages: null,
-  };
+const App = () => {
+  const [imageName, setImageName] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState(Status.IDLE);
+  const [pages, setPages] = useState(null);
 
-  handleSubmitOfSearch = searchName => {
-    const { imageName } = this.state;
+  const handleSubmitOfSearch = searchName => {
     if (imageName !== searchName) {
-      this.setState({
-        imageName: searchName,
-        page: 1,
-        images: [],
-        pages: null,
-      });
+      setImageName(searchName);
+      setPage(1);
+      setImages([]);
+      setPages(null);
     }
     return;
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const { imageName, page } = this.state;
-    if (prevState.imageName !== imageName || prevState.page !== page) {
-      this.setState({ status: Status.PENDING });
-      ImageAPI(imageName, page)
-        .then(this.onData)
-        .catch(error => this.setState({ error, status: Status.REJECTED }));
-    }
-  }
-  onData = imagesNew => {
-    const { images, page } = this.state;
+  const onData = imagesNew => {
     if (imagesNew.data.totalHits === 0) {
-      this.setState({ error: 'Изображений не найдено', status: Status.REJECTED });
+      setError('Изображений не найдено');
+      setStatus(Status.REJECTED);
       toast.warn('Введите корректно поиск!', {
         position: 'top-right',
         autoClose: 5000,
@@ -63,59 +48,64 @@ export class App extends Component {
       return;
     }
     if (images !== imagesNew && imagesNew !== null && page >= 1) {
-      this.setState(prevState => {
-        return {
-          status: Status.RESOLVED,
-          pages: Math.ceil(imagesNew.data.totalHits / 12),
-          images: [...prevState.images, ...imagesNew.data.hits],
-        };
-      });
+      setPages(Math.ceil(imagesNew.data.totalHits / 12));
+      console.log('imagesNew', imagesNew);
+      console.log('images', images);
+      setImages([...images, ...imagesNew.data.hits]);
+      setStatus(Status.RESOLVED);
     }
     return;
   };
 
-  onClickLoadMore = () => {
-    this.setState(({ page }) => {
-      return { page: page + 1 };
-    });
+  useEffect(() => {
+    if (!imageName) {
+      return;
+    }
+    setStatus(Status.PENDING);
+    ImageAPI(imageName, page)
+      .then(onData)
+      .catch(error => {
+        setError(error);
+        setStatus(Status.REJECTED);
+      });
+  }, [imageName, page]);
+
+  const onClickLoadMore = () => {
+    setPage(state => state + 1);
   };
 
-  render() {
-    const { status, error, images, pages, page } = this.state;
-    return (
-      <div className={s.App}>
-        <Searchbar handleSubmitOfSearch={this.handleSubmitOfSearch} />
-        {status === Status.REJECTED && <ErrorMessage errorMes={error} />}
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-        {images && images.length > 0 && (
-          <ImageGallery images={images} status={status} />
-        )}
-        {status === Status.PENDING && (
-          <div className={s.BallTriangle}>
-            <BallTriangle
-              type="ThreeDots"
-              color="#2BAD60"
-              height="100"
-              width="100"
-            />
-          </div>
-        )}
-        {status === Status.RESOLVED &&
-          page !== pages &&
-          images &&
-          images.length > 0 &&
-          images.length !== 0 && <Button onClick={this.onClickLoadMore} />}
-      </div>
-    );
-  }
-}
+  return (
+    <div className={s.App}>
+      <Searchbar handleSubmitOfSearch={handleSubmitOfSearch} />
+      {status === Status.REJECTED && <ErrorMessage errorMes={error} />}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      {images && images.length > 0 && <ImageGallery images={images} />}
+      {status === Status.PENDING && (
+        <div className={s.BallTriangle}>
+          <BallTriangle
+            type="ThreeDots"
+            color="#2BAD60"
+            height="100"
+            width="100"
+          />
+        </div>
+      )}
+      {status === Status.RESOLVED &&
+        page !== pages &&
+        images &&
+        images.length > 0 &&
+        images.length !== 0 && <Button onClick={onClickLoadMore} />}
+    </div>
+  );
+};
+export default App;
