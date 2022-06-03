@@ -8,7 +8,12 @@ import ErrorMessage from './ErrorMessage';
 import { ToastContainer, toast } from 'react-toastify';
 import { BallTriangle } from 'react-loader-spinner';
 import 'react-toastify/dist/ReactToastify.css';
-
+const Status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+};
 export class App extends Component {
   state = {
     imageName: '',
@@ -16,7 +21,7 @@ export class App extends Component {
     images: [],
     imagesNew: null,
     error: null,
-    status: 'idle',
+    status: Status.IDLE,
     pages: null,
   };
 
@@ -36,16 +41,16 @@ export class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     const { imageName, page } = this.state;
     if (prevState.imageName !== imageName || prevState.page !== page) {
-      this.setState({ status: 'pending' });
+      this.setState({ status: Status.PENDING });
       ImageAPI(imageName, page)
         .then(this.onData)
-        .catch(error => this.setState({ error, status: 'rejected' }));
+        .catch(error => this.setState({ error, status: Status.REJECTED }));
     }
   }
   onData = imagesNew => {
     const { images, page } = this.state;
     if (imagesNew.data.totalHits === 0) {
-      this.setState({ error: 'Изображений не найдено', status: 'rejected' });
+      this.setState({ error: 'Изображений не найдено', status: Status.REJECTED });
       toast.warn('Введите корректно поиск!', {
         position: 'top-right',
         autoClose: 5000,
@@ -60,7 +65,7 @@ export class App extends Component {
     if (images !== imagesNew && imagesNew !== null && page >= 1) {
       this.setState(prevState => {
         return {
-          status: 'resolved',
+          status: Status.RESOLVED,
           pages: Math.ceil(imagesNew.data.totalHits / 12),
           images: [...prevState.images, ...imagesNew.data.hits],
         };
@@ -80,7 +85,7 @@ export class App extends Component {
     return (
       <div className={s.App}>
         <Searchbar handleSubmitOfSearch={this.handleSubmitOfSearch} />
-        {status === 'rejected' && <ErrorMessage errorMes={error} />}
+        {status === Status.REJECTED && <ErrorMessage errorMes={error} />}
         <ToastContainer
           position="top-right"
           autoClose={3000}
@@ -95,7 +100,7 @@ export class App extends Component {
         {images && images.length > 0 && (
           <ImageGallery images={images} status={status} />
         )}
-        {status === 'pending' && (
+        {status === Status.PENDING && (
           <div className={s.BallTriangle}>
             <BallTriangle
               type="ThreeDots"
@@ -105,7 +110,7 @@ export class App extends Component {
             />
           </div>
         )}
-        {status === 'resolved' &&
+        {status === Status.RESOLVED &&
           page !== pages &&
           images &&
           images.length > 0 &&
