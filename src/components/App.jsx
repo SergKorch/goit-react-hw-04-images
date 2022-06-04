@@ -53,7 +53,7 @@ const App = () => {
       }
       if (imagesNew !== null && page >= 1) {
         setPages(Math.ceil(imagesNew.data.totalHits / 12));
-        setImages(prev=>[...prev, ...imagesNew.data.hits]);
+        setImages(prev => [...prev, ...imagesNew.data.hits]);
         setStatus(Status.RESOLVED);
         return;
       }
@@ -70,7 +70,6 @@ const App = () => {
     apiImages();
   }, [imageName, page]);
 
-  
   const onClickLoadMore = () => {
     setPage(state => state + 1);
   };
