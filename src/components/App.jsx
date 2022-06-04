@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
 import s from './finder.module.css';
 import ImageGallery from './ImageGallery';
@@ -32,6 +33,19 @@ const App = () => {
     return;
   };
 
+  useEffect(() => {
+    if (!imageName) {
+      return;
+    }
+    setStatus(Status.PENDING);
+    ImageAPI(imageName, page)
+      .then(onData)
+      .catch(error => {
+        setError(error);
+        setStatus(Status.REJECTED);
+      });
+  }, [imageName, page]);
+
   const onData = imagesNew => {
     if (imagesNew.data.totalHits === 0) {
       setError('Изображений не найдено');
@@ -51,23 +65,9 @@ const App = () => {
       setPages(Math.ceil(imagesNew.data.totalHits / 12));
       setImages([...images, ...imagesNew.data.hits]);
       setStatus(Status.RESOLVED);
-    }
-    return;
-  };
-
-  useEffect(() => {
-    if (!imageName) {
       return;
     }
-    setStatus(Status.PENDING);
-    ImageAPI(imageName, page)
-      .then(onData)
-      .catch(error => {
-        setError(error);
-        setStatus(Status.REJECTED);
-      });
-  }, [imageName, page]);
-
+  };
   const onClickLoadMore = () => {
     setPage(state => state + 1);
   };
