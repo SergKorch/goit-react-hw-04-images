@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
 import s from './finder.module.css';
 import ImageGallery from './ImageGallery';
@@ -37,37 +36,41 @@ const App = () => {
     if (!imageName) {
       return;
     }
-    setStatus(Status.PENDING);
-    ImageAPI(imageName, page)
-      .then(onData)
-      .catch(error => {
-        setError(error);
+    const onData = imagesNew => {
+      if (imagesNew.data.totalHits === 0) {
+        setError('Изображений не найдено');
         setStatus(Status.REJECTED);
-      });
+        toast.warn('Введите корректно поиск!', {
+          position: 'top-right',
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        return;
+      }
+      if (images !== imagesNew && imagesNew !== null && page >= 1) {
+        setPages(Math.ceil(imagesNew.data.totalHits / 12));
+        setImages([...images, ...imagesNew.data.hits]);
+        setStatus(Status.RESOLVED);
+        return;
+      }
+    };
+    const apiImages = () => {
+      setStatus(Status.PENDING);
+      ImageAPI(imageName, page)
+        .then(onData)
+        .catch(error => {
+          setError(error);
+          setStatus(Status.REJECTED);
+        });
+    };
+    apiImages();
   }, [imageName, page]);
 
-  const onData = imagesNew => {
-    if (imagesNew.data.totalHits === 0) {
-      setError('Изображений не найдено');
-      setStatus(Status.REJECTED);
-      toast.warn('Введите корректно поиск!', {
-        position: 'top-right',
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      return;
-    }
-    if (images !== imagesNew && imagesNew !== null && page >= 1) {
-      setPages(Math.ceil(imagesNew.data.totalHits / 12));
-      setImages([...images, ...imagesNew.data.hits]);
-      setStatus(Status.RESOLVED);
-      return;
-    }
-  };
+  
   const onClickLoadMore = () => {
     setPage(state => state + 1);
   };
