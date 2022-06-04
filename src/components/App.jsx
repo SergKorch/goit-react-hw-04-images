@@ -51,9 +51,9 @@ const App = () => {
         });
         return;
       }
-      if (images !== imagesNew && imagesNew !== null && page >= 1) {
+      if (imagesNew !== null && page >= 1) {
         setPages(Math.ceil(imagesNew.data.totalHits / 12));
-        setImages([...images, ...imagesNew.data.hits]);
+        setImages(prev=>[...prev, ...imagesNew.data.hits]);
         setStatus(Status.RESOLVED);
         return;
       }
