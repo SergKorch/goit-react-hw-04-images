@@ -3,7 +3,7 @@ import s from './finder.module.css';
 import ImageGallery from './ImageGallery';
 import Searchbar from './Searchbar';
 import Button from './Button';
-import ImageAPI from './imageAPI';
+import imageAPI from '../imageAPI';
 import ErrorMessage from './ErrorMessage';
 import { ToastContainer, toast } from 'react-toastify';
 import { BallTriangle } from 'react-loader-spinner';
@@ -60,7 +60,7 @@ const App = () => {
     };
     const apiImages = () => {
       setStatus(Status.PENDING);
-      ImageAPI(imageName, page)
+      imageAPI(imageName, page)
         .then(onData)
         .catch(error => {
           setError(error);
