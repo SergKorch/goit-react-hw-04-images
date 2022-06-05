@@ -3,7 +3,7 @@ import s from './finder.module.css';
 import ImageGallery from './ImageGallery';
 import Searchbar from './Searchbar';
 import Button from './Button';
-import imageAPI from '../imageAPI';
+import imageAPI from '../services/imageAPI';
 import ErrorMessage from './ErrorMessage';
 import { ToastContainer, toast } from 'react-toastify';
 import { BallTriangle } from 'react-loader-spinner';
